@@ -3,23 +3,33 @@
 #include <random>
 #include "coordinate.h"
 
-void add_coordinate(Coordinate *list_end, float x, float y){
+//Changing parameter to reference of list_end
+//I cannot change the tail if we are only using a local one
+void add_coordinate(Coordinate *&list_end, float x, float y){
+//Function to add a node to an existing linked list
+//But we cant add a node to a nonexistant list
+	if(list_end == nullptr){
+		std::cout << "Error, no list to add to" << std::endl;
+		return;
+	}
 	Coordinate *newnode = new Coordinate;
 	newnode->x = x;
 	newnode->y = y;
 	newnode->coord_id = list_end->coord_id + 1;
-	newnode->next = list_end->next;
+	newnode->next = nullptr;
 	newnode->previous = list_end;
-	list_end = newnode;
+	list_end->next = newnode;
+	list_end = newnode; //This wouldnt be possible without reference
+
 }
 
 	 
 void forward_display(Coordinate *list_beginning){
 //We will use a temporary node to traverse each node and print their coordinates
+	std::cout << "\n\nForward Traversal" << std::endl;
 	Coordinate *temporary = new Coordinate;
 	temporary = list_beginning;
 	int counter = 1;
-	std
 	while(temporary != nullptr){
 		std::cout << "Node: " << counter << std::endl;
 		std::cout << "Coordinates: (" << temporary->x << ", " << temporary->y << ")" << std::endl;
@@ -27,6 +37,7 @@ void forward_display(Coordinate *list_beginning){
 		temporary = temporary->next; //Points to the next node
 		counter++;
 	}
+	delete temporary;
 }
 
 
@@ -34,8 +45,8 @@ void forward_display(Coordinate *list_beginning){
 
 void backward_display(Coordinate *list_end){
 //We will use a temporary node to traverse each node and print their coordinates
-        Coordinate *temporary = new Coordinate;
-        temporary = list_end;
+	std::cout << "\n\nBackward Traversal" << std::endl;
+        Coordinate *temporary = list_end;
         int counter = temporary->coord_id;
         while(temporary != nullptr){
                 std::cout << "Node: " << counter << std::endl;
@@ -45,9 +56,107 @@ void backward_display(Coordinate *list_end){
                 counter--;
         }
 }
-//void delete_coordinate(Coordinate *list_beginning, int coord_id_to_delete);
-//int list_length(Coordinate *list_beginning);
-//void closest_to(Coordinate *list_beginning, float x, float y);
+
+
+//Another instance where i have to change parameter
+//pass by reference instead
+void delete_coordinate(Coordinate *&list_beginning, int coord_id_to_delete){
+//We have to find the node that matches the coord id
+	Coordinate *temporary = list_beginning;
+	while(temporary->coord_id != coord_id_to_delete){
+		temporary = temporary->next;
+	}
+	std::cout <<"\n---ID FOUND---\n" << "ID: " << coord_id_to_delete << std::endl;
+	//now i will link the nodes behind and after the temporary
+	//BUT the head and tail have special cases
+	//Head Case
+	if(temporary == list_beginning){
+		list_beginning = temporary->next; //moving head to the next node
+		list_beginning->previous = nullptr; //establishing it as the head
+		delete temporary;
+		return;
+	}
+	//Tail Case
+	if(temporary->next == nullptr){
+		Coordinate *behind = temporary->previous;
+		behind->next = nullptr;
+		delete temporary;
+		return;
+	}
+
+	//Middle Case
+	Coordinate *behind = temporary->previous;
+	Coordinate *after = temporary->next;
+
+	behind->next = after;
+	after->previous = behind;
+	delete temporary;
+
+
+}
+
+
+int list_length(Coordinate *list_beginning){
+	Coordinate *temporary = list_beginning;
+	int counter = 0;
+	while(temporary != nullptr){
+		temporary = temporary->next;
+		counter++;
+	}
+	return counter;
+}
+
+void closest_to(Coordinate *list_beginning, float x, float y){
+	
+	//If we have no list
+	if(list_beginning == nullptr){
+		return;
+	}
+	
+	
+	Coordinate *temporary = list_beginning;
+	//Need counter to have a for loop
+	int counter = 0;
+
+	while(temporary != nullptr){
+		temporary = temporary->next;
+		counter++;
+	}
+
+	temporary = list_beginning;
+	std::vector<float> leastDistance;
+	
+	for(int i = 0; i < counter; i++){
+		//Distance formula
+		leastDistance.push_back(std::hypot(temporary->x - x, temporary->y - y));
+		temporary = temporary->next;
+	}
+
+
+	int point = list_beginning->coord_id;
+	float closest_point = leastDistance[0];
+	temporary = list_beginning->next;
+	for(int i = 1; i < counter; i++){
+		if(closest_point > leastDistance[i]){
+			closest_point = leastDistance[i];
+			point = temporary->coord_id;
+		}
+		temporary =  temporary->next;
+	}
+	temporary = list_beginning;
+	while(temporary != nullptr){
+		if(temporary->coord_id == point){
+			std::cout << "Closest to (" << x << ", " << y << ") is (" << temporary->x << ", " << temporary->y << ")" << std::endl;
+			return;
+		}
+		temporary = temporary->next;
+	}
+}
+
+
+		
+
+
 
 int main(int arguments, char *argv[]){
 
@@ -89,9 +198,29 @@ int main(int arguments, char *argv[]){
 			tail = node;
 		}
 	}
+	//FORWARD PRINT
+	forward_display(head);
+
+	//BACKWARD PRINT
+	backward_display(tail);
+
+	//Add (10,10 to list)
+	std::cout << "\n\n----Adding the coordinate (10,10) to end of list----" << std::endl;
 	add_coordinate(tail, 10, 10);
 	forward_display(head);
-	backward_display(tail);	
+
+	//Deleting (10,10) node
+	delete_coordinate(head, 3);
+	std::cout << "\nRemoving coordinate (10,10)!" << std::endl;
+	forward_display(head);
+
+	//Length of list
+	std::cout << "\nLength of Linked List: " << list_length(head) << " Nodes" << std::endl;
+
+	//closest to (0,0)
+	closest_to(head, 0, 0);	
+
+	
 	return 0;
 }
 
