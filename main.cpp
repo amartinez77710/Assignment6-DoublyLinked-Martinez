@@ -114,15 +114,15 @@ void closest_to(Coordinate *list_beginning, float x, float y){
 	}
 	
 	
+	//Finding the amount of nodes there are
 	Coordinate *temporary = list_beginning;
-	//Need counter to have a for loop
 	int counter = 0;
-
 	while(temporary != nullptr){
 		temporary = temporary->next;
 		counter++;
 	}
-
+	
+	//Doing distance formula, while saving values to a vector
 	temporary = list_beginning;
 	std::vector<float> leastDistance;
 	
@@ -131,8 +131,9 @@ void closest_to(Coordinate *list_beginning, float x, float y){
 		leastDistance.push_back(std::hypot(temporary->x - x, temporary->y - y));
 		temporary = temporary->next;
 	}
-
-
+	
+	//Assigning values and finding the smallest in the vector
+	//The smallest will give me the exact node
 	int point = list_beginning->coord_id;
 	float closest_point = leastDistance[0];
 	temporary = list_beginning->next;
@@ -208,18 +209,30 @@ int main(int arguments, char *argv[]){
 	std::cout << "\n\n----Adding the coordinate (10,10) to end of list----" << std::endl;
 	add_coordinate(tail, 10, 10);
 	forward_display(head);
-
+	
+	
 	//Deleting (10,10) node
-	delete_coordinate(head, 3);
+	delete_coordinate(head, input + 1);
 	std::cout << "\nRemoving coordinate (10,10)!" << std::endl;
 	forward_display(head);
+
 
 	//Length of list
 	std::cout << "\nLength of Linked List: " << list_length(head) << " Nodes" << std::endl;
 
 	//closest to (0,0)
 	closest_to(head, 0, 0);	
+	
+	//Free memory
+	Coordinate *temporary = nullptr;
+	for(int i = 0; i < input; i++){
+		temporary = head;
+		head = head->next;
+		delete temporary;
+	}
 
+		
+		
 	
 	return 0;
 }
